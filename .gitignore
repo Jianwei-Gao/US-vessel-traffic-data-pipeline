@@ -1,0 +1,7 @@
+airflow/config/**
+airflow/logs/**
+credentials/**
+**/.env
+!credentials/example-google-credentials.json
+!**/.gitkeep
+!**/README.md
