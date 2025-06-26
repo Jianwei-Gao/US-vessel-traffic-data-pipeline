@@ -2,6 +2,9 @@ airflow/config/**
 airflow/logs/**
 credentials/**
 **/.env
+terraform/wkdir/.terraform
+terraform/wkdir/.terraform.lock.hcl
+terraform/wkdir/terraform.tfstate
 !credentials/example-google-credentials.json
 !**/.gitkeep
 !**/README.md
