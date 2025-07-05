@@ -51,8 +51,8 @@ x-airflow-common:
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
   # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.0.2}
   build: 
-    context: ..
-    dockerfile: ./airflow/Dockerfile
+    context: .
+    dockerfile: ./Dockerfile
   env_file: '../.env'
   environment:
     &airflow-common-env
@@ -77,12 +77,14 @@ x-airflow-common:
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
     # The following line set up the default google cloud connection for google cloud operators/hooks in airflow
     # a valid "google-credentials.json" in credentials file and its corrosponding GCP_PROJECT_ID in .env is required for proper functionality 
-    AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://?key_path=%2Fopt%2Fairflow%2Fgoogle%2Fairflow-google-credentials.json&project=${GCP_PROJECT_ID}'
+    AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://?key_path=%2Fopt%2Fairflow%2Fgoogle%2Fgoogle-credentials.json&project=${GCP_PROJECT_ID}'
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+    - ../credentials/google-credential.json:/opt/airflow/google/google-credential.json
+
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on

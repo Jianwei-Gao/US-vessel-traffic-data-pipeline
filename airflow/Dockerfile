@@ -11,8 +11,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* 
 
 USER airflow
-COPY ./airflow/requirements.txt .
-COPY ./credentials/airflow-google-credentials.json /opt/airflow/google/airflow-google-credentials.json
+COPY ./requirements.txt .
 RUN pip install --no-cache-dir apache-airflow==${AIRFLOW_VERSION} -r requirements.txt
 
 WORKDIR $AIRFLOW_HOME

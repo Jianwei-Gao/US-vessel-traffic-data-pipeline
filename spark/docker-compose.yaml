@@ -1,0 +1,16 @@
+services:
+  bash:
+    build: 
+      context: .
+      args:
+        HOST_UID: ${HOST_UID:-185}
+        HOST_GID: ${HOST_GID:-185}
+    user: "${HOST_UID:-185}:${HOST_GID:-185}"
+    env_file: "../.env"
+    volumes:
+      - ./work-dir:/opt/spark/work-dir
+    # ports:
+    #   - "4040:4040"
+    entrypoint: "/bin/bash"
+    stdin_open: true  
+    tty: true        
