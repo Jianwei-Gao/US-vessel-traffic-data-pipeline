@@ -1,4 +1,4 @@
-FROM apache/airflow:latest
+FROM apache/airflow:3.0.2
 
 ENV AIRFLOW_HOME=/opt/airflow
 
@@ -8,10 +8,10 @@ RUN apt-get update \
          vim \
   && apt-get autoremove -yqq --purge \
   && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* 
+  && rm -rf /var/lib/apt/lists/*
 
-USER airflow
+  USER airflow
 COPY ./requirements.txt .
-RUN pip install --no-cache-dir apache-airflow==${AIRFLOW_VERSION} -r requirements.txt
+RUN pip install --no-cache-dir "apache-airflow==${AIRFLOW_VERSION}" -r requirements.txt
 
 WORKDIR $AIRFLOW_HOME

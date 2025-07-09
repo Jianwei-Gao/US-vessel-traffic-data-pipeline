@@ -53,7 +53,7 @@ x-airflow-common:
   build: 
     context: .
     dockerfile: ./Dockerfile
-  env_file: '../.env'
+  env_file: './.env'
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
@@ -77,13 +77,13 @@ x-airflow-common:
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
     # The following line set up the default google cloud connection for google cloud operators/hooks in airflow
     # a valid "google-credentials.json" in credentials file and its corrosponding GCP_PROJECT_ID in .env is required for proper functionality 
-    AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://?key_path=%2Fopt%2Fairflow%2Fgoogle%2Fgoogle-credentials.json&project=${GCP_PROJECT_ID}'
+    AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://?key_path=%2Fopt%2Fairflow%2Fcredentials%2Fgoogle-credential.json&project=${GCP_PROJECT_ID}'
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
-    - ../credentials/google-credential.json:/opt/airflow/google/google-credential.json
+    - ../credentials/:/opt/airflow/credentials/
 
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
