@@ -19,7 +19,7 @@ def get_pl_schema():
   from polars import Schema, String, Datetime, Int32, Int16, Float64, Float32
   return Schema(
     {
-      "MMSI":Int32(),
+      "MMSI":String(),
       "BaseDateTime":Datetime(),
       "LAT":Float64(),
       "LON":Float64(),

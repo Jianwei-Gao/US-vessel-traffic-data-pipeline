@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r /opt/requirements.txt; \ 
     # rm requirements.txt; \
     rm -rf /var/lib/apt/lists/*
-
+RUN curl -LfO --output-dir /opt/spark/jars https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-latest.jar
 ARG HOST_UID=185
 ARG HOST_GID=185    
 

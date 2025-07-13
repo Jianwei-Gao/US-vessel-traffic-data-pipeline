@@ -10,8 +10,8 @@ services:
     volumes:
       - ./work-dir:/opt/spark/work-dir
       - ../credentials/:/opt/spark/credentials
-    # ports:
-    #   - "4040:4040"
+    ports:
+      - "4040:4045"
     entrypoint: "/bin/bash"
     stdin_open: true  
     tty: true        
