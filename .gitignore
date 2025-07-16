@@ -7,6 +7,8 @@ terraform/wkdir/.terraform
 terraform/wkdir/.terraform.lock.hcl
 terraform/wkdir/terraform.tfstate
 spark/work-dir/artifacts
+spark/work-dir/ais_data
+spark/work-dir/vessel_profile
 !credentials/example-google-credentials.json
 !**/.gitkeep
 !**/README.md
