@@ -27,5 +27,6 @@ ENV PATH="/opt/spark/bin:$PATH"
 
 
 USER spark
+ENV SHELL=/bin/bash
 WORKDIR /opt/spark/
-ENTRYPOINT ["/bin/sh"]
+ENTRYPOINT ["/bin/bash"]

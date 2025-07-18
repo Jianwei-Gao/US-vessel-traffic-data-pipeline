@@ -78,6 +78,7 @@ x-airflow-common:
     # The following line set up the default google cloud connection for google cloud operators/hooks in airflow
     # a valid "google-credentials.json" in credentials file and its corrosponding GCP_PROJECT_ID in .env is required for proper functionality 
     AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://?key_path=%2Fopt%2Fairflow%2Fcredentials%2Fgoogle-credential.json&project=${GCP_PROJECT_ID}'
+    SHELL: '/bin/bash'
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
