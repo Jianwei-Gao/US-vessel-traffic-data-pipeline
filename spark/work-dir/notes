@@ -1,0 +1,6 @@
+spark-submit \
+  --driver-memory 3g \
+  --conf spark.ui.port=4045 \
+  /opt/spark/work-dir/transformData.py \
+  --bucket $GCS_BUCKET_NAME \
+  --path raw_day

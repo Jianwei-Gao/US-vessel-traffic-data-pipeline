@@ -37,6 +37,9 @@ with DAG(
           },
         "pysparkJob":{
           "mainPythonFileUri":"gs://vessel-traffic-parquet-data/code/transformData.py",
+          "args": ["--bucket", os.environ.get("GCS_BUCKET_NAME"), 
+                   "--path", "raw_day/year=2024/month=01/AIS_2024_01_01.parquet",
+                   "--vcpu", os.environ.get("CLUSTER_VCPU", "4")]
         }
       }
     )

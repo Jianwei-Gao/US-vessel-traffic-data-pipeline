@@ -2,6 +2,7 @@ from pyspark import SparkConf
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 from pyspark.sql.types import *
+import argparse
 
 def get_spark_schema():
   return StructType([
@@ -25,19 +26,36 @@ def get_spark_schema():
   ])
   
 if __name__ == "__main__":
-  # conf = SparkConf().set('spark.ui.port', '4045')\
-  #   .set("google.cloud.auth.service.account.enable", "true")\
-  #   .set("google.cloud.auth.service.account.json.keyfile", "/opt/spark/credentials/google-credential.json")
-  # spark = SparkSession.builder.appName("spark").config(conf = conf).master("local[*]").getOrCreate()
-  spark = SparkSession.builder.appName("spark").getOrCreate()
-
-  gcs_path = "gs://vessel-traffic-parquet-data/"
-  spark_df = spark.read.schema(get_spark_schema()).format("parquet").load(gcs_path + "raw_day/AIS_2024_01_01.parquet")
+  parser = argparse.ArgumentParser(description="Transforming gcs raw day data with Spark")
+  parser.add_argument("--bucket", required =True, type=str, help="id of google cloud bucket")
+  parser.add_argument("--path", required=True, type=str, help="directory within bucket to data file(s) to be processed")
+  parser.add_argument("--vcpu", required=False, type=int, help="for configuration tuning: enter number of number of vcpu cluster has")
+  args = parser.parse_args()
+  
+  config = SparkConf()
+  # config.set("spark.dataproc.enhanced.optimizer.enabled", True)
+  # config.set("spark.dataproc.enhanced.execution.enabled", True)
+  # if(args.vcpu):
+  #   config.set("spark.sql.shuffle.partitions", 3*args.vcpu)
+  #   config.set("spark.default.parallelism", 3*args.vcpu)
+  config.set("google.cloud.auth.service.account.enable", "true")
+  config.set("google.cloud.auth.service.account.json.keyfile", "/opt/spark/credentials/google-credential.json")
+  spark = SparkSession.builder.config(conf=config).appName("spark").getOrCreate()
+  gcs_path = f"gs://{args.bucket}/"
+  spark_df = spark.read.schema(get_spark_schema()).format("parquet").load(gcs_path + args.path)
   vessel_profile_df = spark_df.select("MMSI", "VesselName", "IMO", "CallSign", "VesselType", "Length", "Width").distinct()
   ais_df = spark_df.select("MMSI","BaseDateTime","LAT","LON","SOG","COG","Heading","Status","Draft","Cargo","TransceiverClass")
 
+  #test to make sure MMSI profiles are distinct
+  # if(vessel_profile_df.select("MMSI").distinct().count() != vessel_profile_df.select("MMSI").count()):
+  #   vessel_profile_df.groupBy("MMSI").count().filter(F.expr("count > 1")).sort(F.desc("count")).show()
+  #   raise ValueError("none-distinct MMSI found")
+
   #documentation regarding "invalid/not accessable/default" values on:
   #https://www.navcen.uscg.gov/ais-class-a-reports
+
+  #disgard ais data with invalid mmsi or positional data
+  ais_df = ais_df.filter((F.length(F.col("MMSI")) == 9) & (F.abs(F.col("LAT")) <= 90) & (F.abs(F.col("LON")) <= 180))
 
   #replace values for "invalid/not accessable/default" to Null for non-categorial field 
   vessel_profile_df = vessel_profile_df.replace("IMO0000000", None, "IMO")
@@ -63,10 +81,14 @@ if __name__ == "__main__":
   ais_df = ais_df.fillna(15, "Status")
   ais_df = ais_df.fillna(0, "Cargo")
 
-  #disgard ais data with invalid mmsi or positional data
-  ais_df = ais_df.filter((F.length(F.col("MMSI")) == 9) & (F.abs(F.col("LAT")) <= 90) & (F.abs(F.col("LON")) <= 180))
-
+  #Make column for partition
+  ais_df = ais_df.withColumn("year",  F.year(F.col("BaseDateTime"))) \
+                 .withColumn("month", F.month(F.col("BaseDateTime")))
+  
   #write transformed data 
   vessel_profile_df.write.mode("overwrite").parquet(gcs_path + "vessel_profile/")
-  ais_df.write.mode("overwrite").parquet(gcs_path + "ais_data/")
+  ais_df.write.mode("overwrite") \
+        .option("partitionOverwriteMode", "dynamic") \
+        .partitionBy("year", "month") \
+        .parquet(gcs_path + "ais_data/")
   
