@@ -1,6 +1,7 @@
 airflow/config/**
 airflow/logs/**
 airflow/dags/__pycache__
+airflow/dags/common/__pycache__
 credentials/**
 **/.env
 terraform/wkdir/.terraform

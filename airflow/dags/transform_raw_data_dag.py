@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 from airflow.sdk import DAG
-from airflow.providers.google.cloud.transfers import local_to_gcs
+from airflow.providers.google.cloud.transfers.local_to_gcs import LocalFilesystemToGCSOperator
 from airflow.providers.google.cloud.operators.dataproc \
   import DataprocStartClusterOperator, DataprocStopClusterOperator, DataprocSubmitJobOperator
 
@@ -13,7 +13,7 @@ with DAG(
   start_date=datetime(2029, 1, 1),
   render_template_as_native_obj=True
   ):
-    upload_spark_code = local_to_gcs(
+    upload_spark_code = LocalFilesystemToGCSOperator(
       task_id = "upload_spark_code",
       src="/opt/airflow/dags/spark/transformData.py",
       dst="/code/",
