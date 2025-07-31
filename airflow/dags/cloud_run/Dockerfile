@@ -1,4 +1,6 @@
 FROM python:3.12-slim-bullseye
+ENV PORT 8080
+EXPOSE $PORT
 
 USER root
 WORKDIR /app
