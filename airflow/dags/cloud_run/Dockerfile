@@ -1,12 +1,12 @@
 FROM python:3.12-slim-bullseye
-ENV PORT 8080
-EXPOSE $PORT
 
 USER root
 WORKDIR /app
 COPY . /app
 
 RUN pip install --no-cache-dir --upgrade pip \
-  && pip install --no-cache-dir polars
+  && pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "main.py"]
+RUN mkdir /mnt/gcs
+
+ENTRYPOINT ["python", "main.py"]

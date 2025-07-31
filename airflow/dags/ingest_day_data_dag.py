@@ -7,7 +7,6 @@ from airflow.providers.google.cloud.hooks.gcs import GCSHook
 
 def generate_day_range(year:int, month:int) -> list:
   from calendar import monthrange
-  return list(range(1,5))
   return list(range(1, monthrange(year, month)[1]+1))
 
 def ingest_day_wrapper(day:int, **context) -> None:
