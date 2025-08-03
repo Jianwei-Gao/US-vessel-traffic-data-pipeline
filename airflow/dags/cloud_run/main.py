@@ -8,4 +8,5 @@ if __name__ == "__main__":
   parser.add_argument("--path", required=True, type=str, help="path to write to")
   args = parser.parse_args()
   
+  #print(args)
   ingest_day(url=args.url, path=args.path)

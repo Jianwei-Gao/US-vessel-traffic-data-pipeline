@@ -12,6 +12,5 @@ services:
       - ../credentials/:/opt/spark/credentials
     ports:
       - "4040:4045"
-    entrypoint: "/bin/bash"
     stdin_open: true  
     tty: true        

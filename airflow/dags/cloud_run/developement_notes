@@ -1,0 +1,7 @@
+gcloud run jobs deploy test \
+--source . \
+--region us-south1 \
+--task-timeout=3600 \
+--memory=4Gi --cpu=2 \
+--add-volume name=vol1,type=cloud-storage,bucket=vessel-traffic-parquet-data \
+--add-volume-mount volume=vol1,mount-path=/mnt/gcs/
