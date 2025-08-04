@@ -37,9 +37,9 @@ if __name__ == "__main__":
   config = SparkConf(loadDefaults=True)
   config.set("spark.dataproc.enhanced.optimizer.enabled", True)
   config.set("spark.dataproc.enhanced.execution.enabled", True)
-  if(args.vcpu & args.vcpu.isdigit()):
-    config.set("spark.sql.shuffle.partitions", 3*args.vcpu)
-    config.set("spark.default.parallelism", 3*args.vcpu)
+  if(args.vcpu):
+      config.set("spark.sql.shuffle.partitions", 3*args.vcpu)
+      config.set("spark.default.parallelism", 3*args.vcpu)
   
   #start the spark session
   spark = SparkSession.builder.config(conf=config).appName("spark").getOrCreate()
@@ -102,11 +102,13 @@ if __name__ == "__main__":
                         F.lead(F.col("LAT")).over(windowSpec).alias("lead_LAT"),
                         F.lead(F.col("LON")).over(windowSpec).alias("lead_LON"),
                         F.lead(F.col("BaseDateTime")).over(windowSpec).alias("lead_time"),
-                        d.alias("km_trav_since_last_ping"),
+                        d.alias("distance_km_since_prev_ping"),
+                        ((F.to_unix_timestamp(F.col("lead_time")) - F.to_unix_timestamp(F.col("BaseDateTime")))/60).alias("time_since_prev_ping")
                         )
 
   #Make column for partition
-  ais_df = ais_df.select("*",  F.year(F.col("BaseDateTime")).alias("year"), F.month(F.col("BaseDateTime").alias("month")))
+  ais_df = ais_df.select(*[col for col in ais_df.columns if col not in ["lead_LAT","lead_LON", "lead_time"]],  
+                         F.year(F.col("BaseDateTime")).alias("year"), F.month(F.col("BaseDateTime")).alias("month"))
   
   #write transformed data 
   vessel_profile_df.write.mode("overwrite").parquet(gcs_path + "vessel_profile/")

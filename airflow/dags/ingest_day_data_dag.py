@@ -40,15 +40,16 @@ with DAG(
       overrides = {
         "container_overrides": [
           {
-            "args":[ "--url", 
-                    "https://coast.noaa.gov/htdata/CMSP/AISDataHandler/"
-                      "{{ logical_date.format('YYYY') }}/"
-                      "AIS_{{ logical_date.format('YYYY') }}_{{ logical_date.format('MM') }}_{{ logical_date.format('DD') }}.zip",
-                    "--path",
-                    "/mnt/gcs/raw_day/"
-                      "year={{ logical_date.format('YYYY') }}/month={{ logical_date.format('M') }}/"
-                      "AIS_{{ logical_date.format('YYYY') }}_{{ logical_date.format('MM') }}_{{ logical_date.format('DD') }}.parquet"
-                    ]
+            "args":[ 
+              "--url", 
+              "https://coast.noaa.gov/htdata/CMSP/AISDataHandler/"
+                "{{ logical_date.format('YYYY') }}/"
+                "AIS_{{ logical_date.format('YYYY') }}_{{ logical_date.format('MM') }}_{{ logical_date.format('DD') }}.zip",
+              "--path",
+              "/mnt/gcs/raw_day/"
+                "year={{ logical_date.format('YYYY') }}/month={{ logical_date.format('M') }}/"
+                "AIS_{{ logical_date.format('YYYY') }}_{{ logical_date.format('MM') }}_{{ logical_date.format('DD') }}.parquet"
+            ]
           }
         ]
       }
