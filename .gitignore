@@ -7,6 +7,7 @@ credentials/**
 terraform/wkdir/.terraform
 terraform/wkdir/.terraform.lock.hcl
 terraform/wkdir/terraform.tfstate
+terraform/wkdir/terraform.tfstate.backup
 spark/work-dir/artifacts
 spark/work-dir/ais_data
 spark/work-dir/vessel_profile

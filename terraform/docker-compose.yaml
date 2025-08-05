@@ -7,8 +7,10 @@ services:
       - TF_VAR_region=${GCP_REGION}
       - TF_VAR_gcs_bucket_name=${GCS_BUCKET_NAME}
       - TF_VAR_bigquery_dataset_name=${BQ_DATASET_NAMES}
+      - TF_VAR_cloudrun_job_name=${CLOUDRUN_JOB_NAME}
+      - TF_VAR_dataproc_cluster_name=${DATAPROC_CLUSTER}
 
     working_dir: /terraform
     volumes:
       - ./wkdir:/terraform
-      - ../credentials/google-credentials.json:/credentials/google-credentials.json
+      - ../credentials/google-credential.json:/credentials/google-credentials.json

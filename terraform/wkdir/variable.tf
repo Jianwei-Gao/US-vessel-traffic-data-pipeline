@@ -22,6 +22,18 @@ variable "gcs_bucket_name" {
   sensitive   = true
 }
 
+variable "dataproc_cluster_name" {
+  type        = string
+  description = "Dataproc cluster's name"
+  sensitive   = true
+}
+
+variable "cloudrun_job_name" {
+  type        = string
+  description = "Cloudrun job worker's name"
+  sensitive   = true
+}
+
 variable "bigquery_dataset_name" {
   type        = string
   description = "BigQuery dataset name"

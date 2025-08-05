@@ -39,7 +39,7 @@ with DAG(
           "main_python_file_uri":f"gs://{os.environ.get("GCS_BUCKET_NAME")}/code/transformData.py",
           "args": [
             "--bucket", os.environ.get("GCS_BUCKET_NAME"), 
-            "--path", "raw_day/year=2024/",
+            "--path", "raw_day/year={{ logical_date.format('YYYY') }}/",
             "--vcpu", os.environ.get("CLUSTER_VCPU", "8")
           ],
           "properties": {
