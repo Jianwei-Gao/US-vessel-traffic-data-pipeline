@@ -25,7 +25,8 @@ with DAG(
   catchup=False,
   is_paused_upon_creation=True,
   start_date=datetime(2029, 1, 1),
-  render_template_as_native_obj=True
+  render_template_as_native_obj=True,
+  max_active_runs=4
   ):                        
     check_file_exists = PythonOperator(
       task_id = f"check_file_exists",
@@ -47,7 +48,8 @@ with DAG(
                 "AIS_{{ logical_date.format('YYYY') }}_{{ logical_date.format('MM') }}_{{ logical_date.format('DD') }}.zip",
               "--path",
               "/mnt/gcs/raw_day/"
-                "year={{ logical_date.format('YYYY') }}/month={{ logical_date.format('M') }}/"
+                "year={{ logical_date.format('YYYY') }}/month={{ logical_date.format('M') }}/",
+              "--filename",
                 "AIS_{{ logical_date.format('YYYY') }}_{{ logical_date.format('MM') }}_{{ logical_date.format('DD') }}.parquet"
             ]
           }

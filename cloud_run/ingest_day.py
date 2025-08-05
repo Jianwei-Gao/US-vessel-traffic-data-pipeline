@@ -22,8 +22,8 @@ def get_pl_schema():
     }
   )
 
-def ingest_day(url:str, path:str, storage_options:dict = None):
-  import requests, zipfile, io
+def ingest_day(url:str, path:str, filename:str, storage_options:dict = None):
+  import requests, zipfile, io, os
   from polars import read_csv 
   res = requests.get(url=url, stream=True)
   if(res.status_code == 200):
@@ -31,7 +31,8 @@ def ingest_day(url:str, path:str, storage_options:dict = None):
     with zipfile.ZipFile(zip_buffer, 'r') as zip_ref:
       csv_filename = zip_ref.namelist()[0]
       with zip_ref.open(csv_filename) as csv_file:
+        os.makedirs(path, exist_ok=True)
         read_csv(csv_file, has_header=True, infer_schema=False,schema=get_pl_schema(),encoding="ascii",quote_char=None) \
-        .write_parquet(file=path, storage_options=storage_options)     
+        .write_parquet(file=path+filename, storage_options=storage_options)     
   else:
     raise ValueError(res.text)
