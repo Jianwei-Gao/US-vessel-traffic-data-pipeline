@@ -6,8 +6,8 @@ if you wish to use your own docker image on docker hub as base image for cloud r
 ```
 docker login -u <username> -p <password>
 
-docker build . -t \<username\>/\<image name\>:\<version\> &&
-docker push \<username\>/\<image name\>:\<version\>
+docker build . -t <username>/<image name>:<version> &&
+docker push <username>/<image name>:<version>
 ```
 
 then in "main.tf" in terraform/wkdir/, replace 

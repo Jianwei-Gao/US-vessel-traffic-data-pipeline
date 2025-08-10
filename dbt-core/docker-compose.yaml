@@ -1,0 +1,11 @@
+services:
+  dbt:
+    image: ghcr.io/dbt-labs/dbt-bigquery:1.9.0
+    volumes:
+      - ./wkdir/:/usr/app/dbt/
+      - ./.dbt/:/.dbt/
+      - ../credentials/google-credential.json:/credentials/google-credential.json
+    env_file: "./.env"
+    user: "${HOST_UID:-1000}:0"
+    stdin_open: true  
+    tty: true        

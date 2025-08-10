@@ -97,3 +97,11 @@ resource "google_cloud_run_v2_job" "cloud_run_job_worker" {
     }
   }
 }
+
+resource "google_bigquery_dataset" "dataset" {
+  dataset_id                 = var.bigquery_dataset_name
+  description                = "Contains all analysis table through dbt"
+  location                   = var.region
+  project                    = var.project
+  delete_contents_on_destroy = true
+}

@@ -16,6 +16,9 @@ Then cd into terraform folder and run the following command line
 ```
 docker compose run cli apply
 ```
+
+
+
 ##
 when you are not using the spark cluster, it is recommended to do 
 ```
