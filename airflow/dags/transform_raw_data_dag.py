@@ -55,7 +55,7 @@ with DAG(
       project_id=os.environ.get("GCP_PROJECT_ID"),
       region=os.environ.get("GCP_REGION"),
       cluster_name=os.environ.get("DATAPROC_CLUSTER"),
-      trigger_rule="always"
+      trigger_rule="all_done"
     )
         
     upload_spark_code >> start_cluster >> dataproc_submit >> stop_cluster

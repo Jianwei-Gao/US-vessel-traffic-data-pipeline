@@ -25,6 +25,15 @@ def get_spark_schema():
     StructField("Cargo", StringType(), True),
     StructField("TransceiverClass", StringType(), False)
   ])
+
+def get_port_schema():
+  return StructType([
+    StructField("UNLOCODE", StringType(), False),
+    StructField("NAME", StringType(), False),
+    StructField("STATE", StringType(), False),
+    StructField("LAT", DoubleType(), False),
+    StructField("LON", DoubleType(), False),
+  ])
   
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description="Transforming gcs raw day data with Spark")
@@ -47,7 +56,8 @@ if __name__ == "__main__":
   #read the raw data
   gcs_path = f"gs://{args.bucket}/"
   spark_df = spark.read.schema(get_spark_schema()).format("parquet").load(gcs_path + args.path)
-  
+  port_df = spark.read.schema(get_port_schema()).csv(gcs_path + "ports.csv", header=True)
+
   #disgard ais data with invalid mmsi or positional data
   spark_df = spark_df.filter((F.length(F.col("MMSI")) == 9) & (F.abs(F.col("LAT")) <= 90) & (F.abs(F.col("LON")) <= 180))
 
@@ -91,24 +101,43 @@ if __name__ == "__main__":
   ais_df = ais_df.fillna(15, "Status")
   ais_df = ais_df.fillna(0, "Cargo")
 
-  delta_lat = F.radians(F.expr("lead_LAT - LAT"))
-  delta_lon = F.radians(F.expr("lead_LON - LON"))
-  a = F.pow(F.sin(delta_lat / 2), 2) + F.cos(F.radians(F.col("LAT"))) * F.cos(F.radians(F.col("lead_LAT"))) * F.pow(F.sin(delta_lon)/2,2)
+  #calculating distance between pings through haversine formula 
+  delta_lat = F.radians(F.expr("LAT - lag_LAT"))
+  delta_lon = F.radians(F.expr("LON - lag_LON"))
+  a = F.pow(F.sin(delta_lat / 2), 2) + F.cos(F.radians(F.col("LAT"))) * F.cos(F.radians(F.col("lag_LAT"))) * F.pow(F.sin(delta_lon)/2,2)
   c = 2 * F.atan2(F.sqrt(a), F.sqrt(1-a))
   d = 6371 * c
+  
+  #calculating distance between vessel and ports through haversine formula
+  delta_lat_port = F.radians(F.expr("ais.LAT - port.LAT"))
+  delta_lon_port = F.radians(F.expr("ais.LON - port.LON"))
+  a_port = F.pow(F.sin(delta_lat_port / 2), 2) + F.cos(F.radians(F.col("ais.LAT"))) * F.cos(F.radians(F.col("port.LAT"))) * F.pow(F.sin(delta_lon_port)/2,2)
+  c_port = 2 * F.atan2(F.sqrt(a_port), F.sqrt(1-a_port))
+  d_port = (6371 * c_port).alias("km_to_port")
 
+  #data aggregation on distance traveled and time since last ping
   windowSpec = Window.partitionBy(F.col("MMSI")).orderBy(F.asc(F.col("BaseDateTime")))
-  ais_df = ais_df.select("*",
-                        F.lead(F.col("LAT")).over(windowSpec).alias("lead_LAT"),
-                        F.lead(F.col("LON")).over(windowSpec).alias("lead_LON"),
-                        F.lead(F.col("BaseDateTime")).over(windowSpec).alias("lead_time"),
-                        d.alias("distance_km_since_prev_ping"),
-                        ((F.to_unix_timestamp(F.col("lead_time")) - F.to_unix_timestamp(F.col("BaseDateTime")))/60).alias("time_since_prev_ping")
-                        )
+  ping_df = ais_df.select("MMSI", "BaseDateTime", "LAT", "LON",
+                        F.lag(F.col("LAT")).over(windowSpec).alias("lag_LAT"),
+                        F.lag(F.col("LON")).over(windowSpec).alias("lag_LON"),
+                        F.lag(F.col("BaseDateTime")).over(windowSpec).alias("lag_time"),
+                        d.alias("km_trav_since_prev_ping"),
+                        ((F.to_unix_timestamp(F.col("BaseDateTime")) - F.to_unix_timestamp(F.col("lag_time")))/60).alias("sec_since_prev_ping")
+                        ).alias("ais")
 
+  #data aggregation on if a vessel is near a port at a time 
+  windowSpec_port = Window.partitionBy(F.col("ais.MMSI"), F.col("ais.BaseDateTime")).orderBy(F.asc(F.col("km_to_port")))
+  cross_df = ping_df.select("MMSI", "BaseDateTime", "LAT", "LON").crossJoin(F.broadcast(port_df.alias("port")))
+  cross_df = cross_df.select("ais.MMSI", "ais.BaseDateTime", d_port, "port.UNLOCODE").filter(F.col("km_to_port") <= 35)
+  cross_df = cross_df.select("*", F.row_number().over(windowSpec_port).alias("order")).where(F.col("order") == 1)
+  cross_df = cross_df.select("ais.MMSI", "ais.BaseDateTime", "km_to_port", "port.UNLOCODE")
+  ping_df = ping_df.join(cross_df.alias("cross"), (F.expr("ais.MMSI = cross.MMSI AND ais.BaseDateTime = cross.BaseDateTime")), "left_outer")
+  ping_df = ping_df.select("ais.MMSI", "ais.BaseDateTime", "ais.LAT", "ais.LON", "ais.km_trav_since_prev_ping", "ais.sec_since_prev_ping", F.col("UNLOCODE").alias("InPort"))
+  ping_df = ping_df.fillna("N/A", "InPort")
+  
   #Make column for partition
-  ais_df = ais_df.select(*[col for col in ais_df.columns if col not in ["lead_LAT","lead_LON", "lead_time"]],  
-                         F.year(F.col("BaseDateTime")).alias("year"), F.month(F.col("BaseDateTime")).alias("month"))
+  ais_df = ais_df.select("*", F.year(F.col("BaseDateTime")).alias("year"), F.month(F.col("BaseDateTime")).alias("month"))
+  ping_df = ping_df.select("*", F.year(F.col("BaseDateTime")).alias("year"), F.month(F.col("BaseDateTime")).alias("month"))
   
   #write transformed data 
   vessel_profile_df.write.mode("overwrite").parquet(gcs_path + "vessel_profile/")
@@ -116,4 +145,7 @@ if __name__ == "__main__":
         .option("partitionOverwriteMode", "dynamic") \
         .partitionBy("year", "month") \
         .parquet(gcs_path + "ais_data/")
-  
+  ping_df.write.mode("overwrite") \
+        .option("partitionOverwriteMode", "dynamic") \
+        .partitionBy("year", "month") \
+        .parquet(gcs_path + "time_analysis_data/")
