@@ -11,7 +11,7 @@ There are currently two main dags for data ingestion:
 
 1. ingest_day_data_gcs:
     - downloading each day's data, convert to parquet, and upload to google cloud storage using cloud run jobs as worker
-    - run backfill from YYYY-MM-DD to YYYY-MM-DD to ingest each day's data (if available) between the two ranges
+    - run backfill from YYYY-MM-DD to YYYY-MM-DD to ingest each day's data (if available) between the two ranges, set "max active runs" to >=2 for backfill to mutiple cloud run jobs in parrallel
 2. transform_raw_data: 
     - data cleaning and aggregrating on a year's day data 
     - run backfill from YYYY-01-01 to YYYY-01-03 to transform ingested data under year YYYY

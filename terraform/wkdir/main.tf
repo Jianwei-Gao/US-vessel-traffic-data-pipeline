@@ -35,7 +35,7 @@ resource "google_dataproc_cluster" "spark_cluster" {
     }
 
     gce_cluster_config {
-      internal_ip_only = true
+      internal_ip_only = false
     }
 
     master_config {
@@ -49,7 +49,7 @@ resource "google_dataproc_cluster" "spark_cluster" {
 
     worker_config {
       num_instances = 4
-      machine_type  = "n4-highmem-2"
+      machine_type  = "n4-highmem-4"
       disk_config {
         boot_disk_type    = "hyperdisk-balanced"
         boot_disk_size_gb = 50
@@ -61,7 +61,12 @@ resource "google_dataproc_cluster" "spark_cluster" {
       override_properties = {
         "spark:spark.dataproc.enhanced.optimizer.enabled" = "true"
         "spark:spark.dataproc.enhanced.execution.enabled" = "true"
+        "dataproc:pip.packages" = "apache-sedona==1.7.2"
       }
+    }
+
+    initialization_action {
+      script      = "gs://vessel-traffic-parquet-data/code/sedona_init.sh"
     }
   }
 }
@@ -74,12 +79,13 @@ resource "google_cloud_run_v2_job" "cloud_run_job_worker" {
 
   template {
     template {
+      max_retries = 0
       containers {
         image = "jianweigao/noaa_ais_data_ingestion_cloudrun_job"
         resources {
           limits = {
-            cpu    = "2"
-            memory = "4Gi"
+            cpu    = "4"
+            memory = "6Gi"
           }
         }
         volume_mounts {

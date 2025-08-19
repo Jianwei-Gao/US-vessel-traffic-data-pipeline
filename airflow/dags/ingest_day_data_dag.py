@@ -25,8 +25,7 @@ with DAG(
   catchup=False,
   is_paused_upon_creation=True,
   start_date=datetime(2029, 1, 1),
-  render_template_as_native_obj=True,
-  max_active_runs=4
+  render_template_as_native_obj=True
   ):                        
     check_file_exists = PythonOperator(
       task_id = f"check_file_exists",
