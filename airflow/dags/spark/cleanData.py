@@ -41,7 +41,7 @@ if __name__ == "__main__":
   
   if(args.vcpu):
     if(args.input_size):
-      config.set("spark.sql.shuffle.partitions", (int)(((args.input_size*1000.0)/128.0)//args.vcpu)*args.vcpu)
+      config.set("spark.sql.shuffle.partitions", (int)(((args.input_size*1000.0)/200.0)//args.vcpu)*args.vcpu)
     else: 
       config.set("spark.sql.shuffle.partitions", 3*args.vcpu)
     config.set("spark.default.parallelism", 3*args.vcpu)
@@ -127,7 +127,7 @@ if __name__ == "__main__":
   
   #write transformed data 
   vessel_profile_df.coalesce(1).write.mode("overwrite").parquet(gcs_path + "vessel_profile/")
-  ais_df.repartition("year", "month").write.mode("overwrite") \
+  ais_df.write.mode("overwrite") \
         .option("partitionOverwriteMode", "dynamic") \
         .partitionBy("year", "month") \
         .parquet(gcs_path + "ais_data/")

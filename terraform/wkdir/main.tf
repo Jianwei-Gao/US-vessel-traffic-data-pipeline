@@ -24,6 +24,14 @@ resource "google_storage_bucket" "parquet-bucket" {
   }
 }
 
+resource "google_storage_bucket_object" "spark_init" {
+  name   = "code/sedona_init.sh"
+  source = "/terraform/sedona_init.sh"
+  bucket = var.gcs_bucket_name
+
+  depends_on = [google_storage_bucket.parquet-bucket]
+}
+
 resource "google_dataproc_cluster" "spark_cluster" {
   name    = var.dataproc_cluster_name
   project = var.project
@@ -43,7 +51,7 @@ resource "google_dataproc_cluster" "spark_cluster" {
       machine_type  = "n4-highmem-4"
       disk_config {
         boot_disk_type    = "hyperdisk-balanced"
-        boot_disk_size_gb = 50
+        boot_disk_size_gb = 100
       }
     }
 
@@ -52,7 +60,7 @@ resource "google_dataproc_cluster" "spark_cluster" {
       machine_type  = "n4-highmem-4"
       disk_config {
         boot_disk_type    = "hyperdisk-balanced"
-        boot_disk_size_gb = 50
+        boot_disk_size_gb = 100
       }
     }
 
@@ -69,6 +77,8 @@ resource "google_dataproc_cluster" "spark_cluster" {
       script      = "gs://vessel-traffic-parquet-data/code/sedona_init.sh"
     }
   }
+
+  depends_on = [google_storage_bucket_object.spark_init]
 }
 
 resource "google_cloud_run_v2_job" "cloud_run_job_worker" {

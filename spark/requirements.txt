@@ -3,4 +3,4 @@ pandas
 polars
 pyarrow
 requests
-shapely
+apache-sedona==1.7.2

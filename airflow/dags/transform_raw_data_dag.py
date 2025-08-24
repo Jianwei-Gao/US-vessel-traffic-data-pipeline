@@ -15,7 +15,7 @@ with DAG(
     upload_spark_code = LocalFilesystemToGCSOperator(
       task_id = "upload_spark_code",
       src=["/opt/airflow/dags/spark/dataAggregation.py", "/opt/airflow/dags/spark/cleanData.py", 
-           "/opt/airflow/dags/spark/ports.csv", "/opt/airflow/dags/spark/sedona_init"],
+           "/opt/airflow/dags/spark/ports.csv"],
       dst="code/",
       bucket=os.environ.get("GCS_BUCKET_NAME")
     )
@@ -47,6 +47,7 @@ with DAG(
           "properties": {
             "spark.dataproc.enhanced.optimizer.enabled": "true",
             "spark.dataproc.enhanced.execution.enabled": "true",
+            "spark.network.timeout": "1200s",
             "spark.sql.adaptive.enabled":"true",
             "spark.sql.adaptive.coalescePartitions.enabled":"true",
             "spark.sql.adaptive.skewJoin.enabled":"true",
@@ -79,6 +80,7 @@ with DAG(
           "properties": {
             "spark.dataproc.enhanced.optimizer.enabled": "true",
             "spark.dataproc.enhanced.execution.enabled": "true",
+            "spark.network.timeout": "1200s",
             "spark.sql.adaptive.enabled":"true",
             "spark.sql.adaptive.coalescePartitions.enabled":"true",
             "spark.sql.adaptive.skewJoin.enabled":"true",

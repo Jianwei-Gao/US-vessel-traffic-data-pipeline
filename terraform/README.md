@@ -16,7 +16,7 @@ Then cd into terraform folder and run the following command line
 ```
 docker compose run cli apply
 ```
-Note: you may need to request an quota adjust to increase max allowed cpu resource to create the dataproc cluster, instructions at https://cloud.google.com/docs/quotas/quota-adjuster
+Note: you may need to request an quota adjust to increase max allowed cpu resource (recommended 32+) to create the dataproc cluster, instructions at https://cloud.google.com/docs/quotas/quota-adjuster
 
 
 
@@ -25,4 +25,4 @@ when you are not using the spark cluster, it is recommended to do
 ```
 docker compose run cli destroy --target google_dataproc_cluster.spark_cluster
 ```
- as it would the compute engine cluster create would incur disk fees even when the cluster is not running
+ as it would the compute engine cluster create would incur heavy disk fees even when the cluster is not running
