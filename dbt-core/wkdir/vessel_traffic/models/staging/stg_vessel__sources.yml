@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: vessel_data_gcp
+    database: "{{ env_var('GCP_PROJECT_ID') }}"
+    schema: "{{ env_var('BQ_DATASET_NAME') }"
+
+    tables:
+      - name: vessel_ais
+      - name: vessel_aggregate
+      - name: vessel_profile

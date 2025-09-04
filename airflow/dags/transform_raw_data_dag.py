@@ -5,6 +5,7 @@ from airflow.sdk import DAG
 from airflow.providers.google.cloud.transfers.local_to_gcs import LocalFilesystemToGCSOperator
 from airflow.providers.google.cloud.operators.dataproc \
   import DataprocStartClusterOperator, DataprocStopClusterOperator, DataprocSubmitJobOperator
+from airflow.providers.google.cloud.operators.bigquery import BigQueryCreateTableOperator
 
 with DAG(  
   dag_id = f"transform_raw_data",
@@ -100,7 +101,80 @@ with DAG(
       cluster_name=os.environ.get("DATAPROC_CLUSTER"),
       #trigger_rule="all_done"
     )
+    
+    createVesselProfileExternBq = BigQueryCreateTableOperator(
+        project_id = os.environ.get("GCP_PROJECT_ID"),
+        task_id = f"create_extern_table_vessel_profile",
+        dataset_id = os.environ.get("BQ_DATASET_NAME"),
+        table_id="vessel_profile",
+        table_resource={
+          "tableReference":{
+            "projectId": os.environ.get("GCP_PROJECT_ID"),
+            "datasetId": os.environ.get("BQ_DATASET_NAME"),
+            "tableId": "vessel_profile"
+          },
+          "type":"EXTERNAL",
+          "externalDataConfiguration": {
+            "sourceUris" : [f"gs://{os.environ.get("GCS_BUCKET_NAME")}/vessel_profile/*.parquet"],
+            "sourceFormat" : "PARQUET"
+          }
+        },
+        trigger_rule="always"
+      )
+    
+    createVesselAisExternBq = BigQueryCreateTableOperator(
+        project_id = os.environ.get("GCP_PROJECT_ID"),
+        task_id = f"create_extern_table_vessel_ais",
+        dataset_id = os.environ.get("BQ_DATASET_NAME"),
+        table_id="vessel_ais",
+        table_resource={
+          "tableReference":{
+            "projectId": os.environ.get("GCP_PROJECT_ID"),
+            "datasetId": os.environ.get("BQ_DATASET_NAME"),
+            "tableId": "vessel_ais"
+          },
+          "type":"AUTO",
+          "externalDataConfiguration": {
+            "sourceUris" : [f"gs://{os.environ.get("GCS_BUCKET_NAME")}/ais_data/*.parquet"],
+            "sourceFormat" : "PARQUET",
+            "hivePartitioningOptions": {
+              "mode": "CUSTOM",
+              "sourceUriPrefix": f"gs://{os.environ.get("GCS_BUCKET_NAME")}/ais_data/",
+              "fields": ['year', 'month']
+            }
+          },
+          
+        },
+        trigger_rule="always"
+      )
+    
+    createVesselAggExternBq = BigQueryCreateTableOperator(
+        project_id = os.environ.get("GCP_PROJECT_ID"),
+        task_id = f"create_extern_table_vessel_agg",
+        dataset_id = os.environ.get("BQ_DATASET_NAME"),
+        table_id="vessel_agg",
+        table_resource={
+          "tableReference":{
+            "projectId": os.environ.get("GCP_PROJECT_ID"),
+            "datasetId": os.environ.get("BQ_DATASET_NAME"),
+            "tableId": "vessel_agg"
+          },
+          "type":"EXTERNAL",
+          "externalDataConfiguration": {
+            "sourceUris" : [f"gs://{os.environ.get("GCS_BUCKET_NAME")}/time_analysis_data/*.parquet"],
+            "sourceFormat" : "PARQUET",
+            "hivePartitioningOptions": {
+            "mode": "AUTO",
+            "sourceUriPrefix": f"gs://{os.environ.get("GCS_BUCKET_NAME")}/time_analysis_data/",
+            "fields": ['year', 'month']
+            }
+          },
+        },
+        trigger_rule="always"
+      )
         
-    upload_spark_code >> start_cluster >> dataproc_clean_data >> dataproc_aggregation >> stop_cluster
+    upload_spark_code >> start_cluster >> dataproc_clean_data >> dataproc_aggregation >> [createVesselAggExternBq, stop_cluster]
+    dataproc_clean_data >> [createVesselProfileExternBq, createVesselAisExternBq]
+    
 
 
