@@ -35,10 +35,8 @@ if __name__ == "__main__":
   #installing apache sedona dependencies
   config = SparkConf(loadDefaults=True)
   config.set("spark.dataproc.enhanced.optimizer.enabled", True)\
-        .set("spark.dataproc.enhanced.execution.enabled", True)\
-        .set("spark.serializer", KryoSerializer.getName)\
-        .set("spark.kryo.registrator", SedonaKryoRegistrator.getName)
-
+        .set("spark.dataproc.enhanced.execution.enabled", True)
+        
   if(args.vcpu):
     if(args.input_size):
       config.set("spark.sql.shuffle.partitions", (int)(((args.input_size*1000.0)/200.0)//args.vcpu)*args.vcpu)
@@ -78,7 +76,7 @@ if __name__ == "__main__":
                           ((F.to_unix_timestamp(F.col("lag_time")) - F.to_unix_timestamp(F.col("BaseDateTime")))/60).alias("MinSincePrevPing")
                           )
   #Make column for partition
-  ais_df = ais_df.select("*", F.year(F.col("BaseDateTime")).alias("year"), F.month(F.col("BaseDateTime")).alias("month"))
+  ais_df = ais_df.select("*", F.date_format(F.col("BaseDateTime"), "YYYY-MM").alias("YearMonth"))
   
   #write aggregated data 
   ais_df.write.mode("overwrite") \

@@ -114,16 +114,16 @@ if __name__ == "__main__":
   
   #merge rows with duplicate MMSI, where if one field have null and the other non-null, the latter would be selected
   vessel_profile_df = vessel_profile_df.groupBy("MMSI").agg(
-      F.first("VesselName", ignorenulls=True),
-      F.first("IMO", ignorenulls=True),
-      F.first("CallSign", ignorenulls=True),
-      F.max("VesselType"),
-      F.first("Length", ignorenulls=True),
-      F.first("Width", ignorenulls=True),
+      F.first("VesselName", ignorenulls=True).alias("VesselName"),
+      F.first("IMO", ignorenulls=True).alias("IMO"),
+      F.first("CallSign", ignorenulls=True).alias("CallSign"),
+      F.max("VesselType").alias("VesselType"),
+      F.first("Length", ignorenulls=True).alias("Length"),
+      F.first("Width", ignorenulls=True).alias("Width"),
     )
   
   #Make column for partition
-  ais_df = ais_df.select("*", F.year(F.col("BaseDateTime")).alias("year"), F.month(F.col("BaseDateTime")).alias("month"))
+  ais_df = ais_df.select("*", F.date_format(F.col("BaseDateTime"), "YYYY-MM").alias("YearMonth"))
   
   #write transformed data 
   vessel_profile_df.coalesce(1).write.mode("overwrite").parquet(gcs_path + "vessel_profile/")

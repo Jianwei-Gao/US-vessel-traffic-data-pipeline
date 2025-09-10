@@ -69,6 +69,10 @@ resource "google_dataproc_cluster" "spark_cluster" {
       override_properties = {
         "spark:spark.dataproc.enhanced.optimizer.enabled" = "true"
         "spark:spark.dataproc.enhanced.execution.enabled" = "true"
+        "spark.sql.extensions" = "org.apache.sedona.viz.sql.SedonaVizExtensions,org.apache.sedona.sql.SedonaSqlExtensions"
+        "spark.serializer" =  "org.apache.spark.serializer.KryoSerializer"
+        "spark.kryo.registrator" =  "org.apache.sedona.core.serde.SedonaKryoRegistrator"
+        "spark.sedona.enableParserExtension" =  "false"
         "dataproc:pip.packages" = "apache-sedona==1.7.2"
       }
     }

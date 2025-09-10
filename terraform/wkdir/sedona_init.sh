@@ -1,3 +1,2 @@
 curl -O --output-dir $SPARK_HOME/jars https://repo.maven.apache.org/maven2/org/apache/sedona/sedona-spark-shaded-3.5_2.12/1.7.2/sedona-spark-shaded-3.5_2.12-1.7.2.jar
 curl -O --output-dir $SPARK_HOME/jars https://repo.maven.apache.org/maven2/org/datasyslab/geotools-wrapper/1.7.2-28.5/geotools-wrapper-1.7.2-28.5.jar
-curl -O --output-dir $SPARK_HOME/jars https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar

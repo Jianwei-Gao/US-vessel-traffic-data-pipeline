@@ -138,7 +138,7 @@ with DAG(
             "sourceUris" : [f"gs://{os.environ.get("GCS_BUCKET_NAME")}/ais_data/*.parquet"],
             "sourceFormat" : "PARQUET",
             "hivePartitioningOptions": {
-              "mode": "CUSTOM",
+              "mode": "AUTO",
               "sourceUriPrefix": f"gs://{os.environ.get("GCS_BUCKET_NAME")}/ais_data/",
               "fields": ['year', 'month']
             }
